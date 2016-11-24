@@ -1,0 +1,35 @@
+p.horoscopescontent
+{
+    text-align:justify;
+}
+p.horoscopescopyright
+{
+    color:#777;
+}
+a.horoscopescopyrightlink 
+{
+    text-decoration:none;
+    color:#777;
+}
+a.horoscopessignimage
+{
+    cursor:default;
+    border:none;
+}
+img.horoscopessignimage
+{
+    border:none;
+}
+span.horoscopessigntitle
+{
+    font-weight:bold;
+}
+span.horoscopessigndates
+{
+    font-weight:bold;
+}
+p.horoscopesmonth
+{
+    font-size:120%; 
+    font-weight:bold;
+}

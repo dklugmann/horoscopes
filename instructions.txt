@@ -1,0 +1,11 @@
+1) Copy the horoscopes.zip file to the Wordpress Plugins directory , wp-content/plugins.
+
+2) Unzip the horoscopes.zip file. This should create a new plugin directory called Horoscopes
+
+3) Login to Wordpress Admin and click on Plugins and the new plugin Horoscopes should appear in the list. Click on Activate.
+
+4) Click on Settings / Horoscopes and fill in the parameters, Website URL , Contact Email and Number of Months Displayed and then Save the Options.
+
+5) On the page and place where you want the horoscopes displayed insert the keyword [horoscopes]
+
+Reports are usually available for the next month around the 25th of the preceeding month.

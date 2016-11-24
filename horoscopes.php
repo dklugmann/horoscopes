@@ -13,7 +13,17 @@ License: GPL
     Adds the shortcode so using the shortcode [horoscopes] in the text displays the horoscopes
 */
 
-add_shortcode("horoscopes", "horoscopes");
+add_shortcode("horoscopes", "horoscopes_standard");
+add_shortcode("horoscopes_last", "horoscopes_last");
+add_shortcode("horoscopes_current", "horoscopes_current");
+add_shortcode("horoscopes_next", "horoscopes_next");
+add_action('wp_enqueue_scripts','horoscopes_include',999);
+
+function horoscopes_include()
+{
+    $url = sprintf("horoscopes.css?id=%d",time());
+    wp_enqueue_style( 'horoscopes-style', plugins_url($url, __FILE__) );
+}
 
 /*
     Called when the Plugin is Activated
@@ -35,12 +45,13 @@ function activation_horoscopesplugin ()
     $url = sprintf ("%s%s?requestxml=%s",$horoscopesclientpath,$horoscopesclientinsert,urlencode($params));
     $returnxmlstring = loadXML($url);
     $filename = './debugactivationhoroscopes.txt';
+/*
     if (!$handle = fopen($filename, 'w'))
     {
         print "Cannot open file ($filename)";
         exit;
     }
-    fprintf ($handle,"url is %s\n",$url);
+*/
 }
 register_activation_hook( __FILE__, 'activation_horoscopesplugin');
 
@@ -52,12 +63,14 @@ function deactivation_horoscopesplugin ()
 {
     $apikey = get_option('generatedapikey');
     $filename = './debugdeactivationhoroscopes.txt';
+/*
     if (!$handle = fopen($filename, 'w'))
     {
         print "Cannot open file ($filename)";
         exit;
     }
     fprintf ($handle,"apikey is %s\n",$apikey);
+*/
     $horoscopesclientpath = 'http://www.myastrologycharts.com/';
     $horoscopesclientdelete = 'horoscopesclientdelete.php';
     $params = sprintf('<horoscopesRequest apikey="%s"></horoscopesRequest>',$apikey);
@@ -270,7 +283,31 @@ function horoscopes_apikey_field()
 <?php
 }
 
-function horoscopes()
+function horoscopes_standard()
+{
+    $retstring = horoscopes('STANDARD');
+    return ($retstring);
+}
+
+function horoscopes_last()
+{
+    $retstring = horoscopes('LAST');
+    return ($retstring);
+}
+
+function horoscopes_current()
+{
+    $retstring = horoscopes('CURRENT');
+    return ($retstring);
+}
+
+function horoscopes_next()
+{
+    $retstring = horoscopes('NEXT');
+    return ($retstring);
+}
+
+function horoscopes($type)
 {
     $options = get_option('horoscopes_options');
     $websitename = (isset($options['websitename_template'])) ? $options['websitename_template'] : '';
@@ -295,11 +332,38 @@ function horoscopes()
 */
     $enginepath = "http://www.myastrologycharts.com/";
     $enginename = "horoscopesservice.php";
-    $params = sprintf('<astroRequest responseFormat="xml">
-        <reports numbermonths="%d">
-        </reports>
-        <auth siteId="iPhone" apiKey="%s"/>
-      </astroRequest>',$numbermonths,$apikey);
+    if ($type == 'STANDARD')
+    {
+        $params = sprintf('<astroRequest responseFormat="xml">
+            <reports numbermonths="%d">
+            </reports>
+            <auth siteId="iPhone" apiKey="%s"/>
+          </astroRequest>',$numbermonths,$apikey);
+    }
+    elseif ($type == 'LAST')
+    {
+        $params = sprintf('<astroRequest responseFormat="xml">
+            <reports monthoffset="-1">
+            </reports>
+            <auth siteId="iPhone" apiKey="%s"/>
+          </astroRequest>',$apikey);
+    }
+    elseif ($type == 'CURRENT')
+    {
+        $params = sprintf('<astroRequest responseFormat="xml">
+            <reports monthoffset="0">
+            </reports>
+            <auth siteId="iPhone" apiKey="%s"/>
+          </astroRequest>',$apikey);
+    }
+    elseif ($type == 'NEXT')
+    {
+        $params = sprintf('<astroRequest responseFormat="xml">
+            <reports monthoffset="1">
+            </reports>
+            <auth siteId="iPhone" apiKey="%s"/>
+          </astroRequest>',$apikey);
+    }
 
     $url = sprintf ("%s%s?requestxml=%s",$enginepath,$enginename,urlencode($params));
     $returnxmlstring = loadXML($url);
@@ -307,7 +371,13 @@ function horoscopes()
     foreach ($Interpretations->Interpretation as $Interpretation)
     {
 #        fprintf ($handle,"Processing %s %s\n", $Interpretation["month"],$Interpretation["year"]);
-        $retstring = sprintf("%s<p style=\"font-size:120%%; font-weight:bold\">Horoscopes %s %s</p>",$retstring,$Interpretation["month"],$Interpretation["year"]);
+        $retstring = sprintf("%s<p class=\"horoscopesmonth\">Horoscopes %s %s</p>",$retstring,$Interpretation["month"],$Interpretation["year"]);
+        if ($Interpretation->Unavailable)
+        {
+            $Interpretation->Unavailable->content = str_ireplace("<![CDATA[","",$Interpretation->Unavailable->content);
+            $Interpretation->Unavailable->content = str_ireplace("]]>","",$Interpretation->Unavailable->content);
+            $retstring = sprintf("%s<p>%s</p>",$retstring,$Interpretation->Unavailable->content);
+        }
         foreach ($Interpretation->Intro as $Intro)
         {
             $retstring = sprintf("%s<p style=\"font-weight:bold\">Introduction</p>",$retstring);
@@ -317,10 +387,13 @@ function horoscopes()
         }
         foreach ($Interpretation->SunSigns->Sign as $Sign)
         {
-            $retstring = sprintf("%s<p style=\"font-weight:bold\">%s (%s)</p>",$retstring,$Sign["name"], $Sign["dates"]);
+            $retstring = sprintf("%s<p><hr />",$retstring);
+            if ($Sign["image"])
+                $retstring = sprintf ("%s<a class=\"horoscopessignimage\" href=\"%s\" onclick=\"return false;\"><img src=\"%s\"><img></a> ",$retstring, $Sign["image"], $Sign["image"]);
+            $retstring = sprintf("%s<span class=\"horoscopessigntitle\">%s</span><span class=\"horoscopessigndates\"> (%s)</span></p>",$retstring,$Sign["name"], $Sign["dates"]);
             $Sign->content = str_ireplace("<![CDATA[","",$Sign->content );
             $Sign->content = str_ireplace("]]>","",$Sign->content );
-            $retstring = sprintf("%s<p style=\"text-align:justify\">%s</p>",$retstring,$Sign->content);
+            $retstring = sprintf("%s<p class=\"horoscopescontent\">%s</p>",$retstring,$Sign->content);
         }          
     }
     $returnxmlstring->Footer->content = str_ireplace("<![CDATA[","",$returnxmlstring->Footer->content);
@@ -328,7 +401,7 @@ function horoscopes()
     if ($returnxmlstring->Footer->content != '')
         $retstring = sprintf("%s%s",$retstring,$returnxmlstring->Footer->content);
 
-    $retstring = sprintf("%s<span style=\"color:black\">&copy %s <a style=\"color:black; text-decoration:none\" href=\"http://www.seeingwithstars.net\">Seeingwithstars</a> & <a style=\"color:black; text-decoration:none\" href=\"http://www.myastrologycharts.com\">Myastrologycharts</a></span>",$retstring,date("Y"));
+    $retstring = sprintf("%s<hr /><p class=\"horoscopescopyright\">&copy %s <a class=\"horoscopescopyrightlink\" href=\"http://www.seeingwithstars.net\">Seeingwithstars</a> & <a class=\"horoscopescopyrightlink\" href=\"http://www.myastrologycharts.com\">Myastrologycharts</a></p>",$retstring,date("Y"));
     return ($retstring);
 }
 
