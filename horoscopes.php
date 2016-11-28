@@ -279,7 +279,7 @@ function horoscopes_apikey_field()
     if (!$apikey)
        $apikey = get_option('generatedapikey');
 ?>
-    <input readonly="readonly" id="apikey_template" name="horoscopes_options[apikey_template]" value="<?php echo$apikey?>">
+    <input readonly id="apikey_template" name="horoscopes_options[apikey_template]" value="<?php echo$apikey?>">
 <?php
 }
 
@@ -389,7 +389,7 @@ function horoscopes($type)
         {
             $retstring = sprintf("%s<p><hr />",$retstring);
             if ($Sign["image"])
-                $retstring = sprintf ("%s<a class=\"horoscopessignimage\" href=\"%s\" onclick=\"return false;\"><img src=\"%s\"><img></a> ",$retstring, $Sign["image"], $Sign["image"]);
+                $retstring = sprintf ("%s<a class=\"horoscopessignimage\" href=\"%s\" onclick=\"return false;\"><img src=\"%s\" alt=\"%s\"></a> ",$retstring, $Sign["image"], $Sign["image"],$Sign["name"]);
             $retstring = sprintf("%s<span class=\"horoscopessigntitle\">%s</span><span class=\"horoscopessigndates\"> (%s)</span></p>",$retstring,$Sign["name"], $Sign["dates"]);
             $Sign->content = str_ireplace("<![CDATA[","",$Sign->content );
             $Sign->content = str_ireplace("]]>","",$Sign->content );
