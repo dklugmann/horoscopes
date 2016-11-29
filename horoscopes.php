@@ -314,14 +314,14 @@ function horoscopes($type)
     $contactemail = (isset($options['contactemail_template'])) ? $options['contactemail_template'] : '';
     $numbermonths = (isset($options['numbermonths_template'])) ? $options['numbermonths_template'] : '';
     $apikey = (isset($options['apikey_template'])) ? $options['apikey_template'] : '';
-/*
+
     if (!$websitename || !$contactemail)
     {
         printf ("<p>Please setup both the Website Name & Contact Email</p>");
         printf ("You can do this via the Plugins/Horoscopes Settings Link</p>");
         return;
     }
-*/
+
 /*
     $filename = './debughoroscopes.txt';
     if (!$handle = fopen($filename, 'w'))
