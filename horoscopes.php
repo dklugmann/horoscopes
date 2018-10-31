@@ -113,7 +113,7 @@ function horoscopes_admin_page_screen()
 ?>
     <div class="wrap">
     <?php screen_icon();?>
-<?
+<?php
     $options = get_option('horoscopes_options');
     if ($options)
     {
@@ -238,7 +238,7 @@ function horoscopes_websitename_field()
     $websitename = esc_textarea($websitename); //sanitise output
 ?>
     <input id="websitename_template" name="horoscopes_options[websitename_template]" value="<?php echo$websitename?>">
-<?
+<?php
 }
 
 function horoscopes_contactemail_field()
@@ -248,7 +248,7 @@ function horoscopes_contactemail_field()
     $contactemail = esc_textarea($contactemail); //sanitise output
 ?>
     <input id="contactemail_template" name="horoscopes_options[contactemail_template]" value="<?php echo$contactemail?>">
-<?
+<?php
 }
 
 function horoscopes_numbermonths_field()
@@ -378,22 +378,28 @@ function horoscopes($type)
             $Interpretation->Unavailable->content = str_ireplace("]]>","",$Interpretation->Unavailable->content);
             $retstring = sprintf("%s<p>%s</p>",$retstring,$Interpretation->Unavailable->content);
         }
-        foreach ($Interpretation->Intro as $Intro)
-        {
-            $retstring = sprintf("%s<p style=\"font-weight:bold\">Introduction</p>",$retstring);
-            $Intro->content = str_ireplace("<![CDATA[","",$Intro->content );
-            $Intro->content = str_ireplace("]]>","",$Intro->content );
-            $retstring = sprintf("%s<p style=\"text-align:justify\">%s</p",$retstring,$Intro->content);
+        if (is_array($Interpretation->Intro) || is_object($Interpretation->Intro))
+        { 
+            foreach ($Interpretation->Intro as $Intro)
+            {
+                $retstring = sprintf("%s<p style=\"font-weight:bold\">Introduction</p>",$retstring);
+                $Intro->content = str_ireplace("<![CDATA[","",$Intro->content );
+                $Intro->content = str_ireplace("]]>","",$Intro->content );
+                $retstring = sprintf("%s<p style=\"text-align:justify\">%s</p",$retstring,$Intro->content);
+            }
         }
-        foreach ($Interpretation->SunSigns->Sign as $Sign)
+        if (is_array($Interpretation->SunSigns->Sign) || is_object($Interpretation->SunSigns->Sign))
         {
-            $retstring = sprintf("%s<p><hr />",$retstring);
-            if ($Sign["image"])
-                $retstring = sprintf ("%s<a class=\"horoscopessignimage\" href=\"%s\" onclick=\"return false;\"><img src=\"%s\" alt=\"%s\"></a> ",$retstring, $Sign["image"], $Sign["image"],$Sign["name"]);
-            $retstring = sprintf("%s<span class=\"horoscopessigntitle\">%s</span><span class=\"horoscopessigndates\"> (%s)</span></p>",$retstring,$Sign["name"], $Sign["dates"]);
-            $Sign->content = str_ireplace("<![CDATA[","",$Sign->content );
-            $Sign->content = str_ireplace("]]>","",$Sign->content );
-            $retstring = sprintf("%s<p class=\"horoscopescontent\">%s</p>",$retstring,$Sign->content);
+            foreach ($Interpretation->SunSigns->Sign as $Sign)
+            {
+                $retstring = sprintf("%s<p><hr />",$retstring);
+                if ($Sign["image"])
+                    $retstring = sprintf ("%s<a class=\"horoscopessignimage\" href=\"%s\" onclick=\"return false;\"><img src=\"%s\" alt=\"%s\"></a> ",$retstring, $Sign["image"], $Sign["image"],$Sign["name"]);
+                $retstring = sprintf("%s<span class=\"horoscopessigntitle\">%s</span><span class=\"horoscopessigndates\"> (%s)</span></p>",$retstring,$Sign["name"], $Sign["dates"]);
+                $Sign->content = str_ireplace("<![CDATA[","",$Sign->content );
+                $Sign->content = str_ireplace("]]>","",$Sign->content );
+                $retstring = sprintf("%s<p class=\"horoscopescontent\">%s</p>",$retstring,$Sign->content);
+            }
         }          
     }
     $returnxmlstring->Footer->content = str_ireplace("<![CDATA[","",$returnxmlstring->Footer->content);
